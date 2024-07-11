@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="small_text">13</integer>
+    <integer name="small_text_line_spacing">18</integer>
+    <integer name="large_text">18</integer>
+
+</resources>

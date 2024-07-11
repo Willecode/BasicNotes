@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Basic Notes</string>
+    <string name="main_title">Basic Notes</string>
+    <string name="title_label">Title</string>
+    <string name="text_label">Enter text…</string>
+
+    <string name="content_description_save">Save</string>
+    <string name="content_description_add">Add</string>
+
+    <string name="about_app_content">This is a portfolio project by Wille</string>
+    <string name="about_app_title">About Basic Notes</string>
+    <string name="about_app_ok">Ok</string>
+
+
+    <string name="drawer_item_about">About</string>
+</resources>
