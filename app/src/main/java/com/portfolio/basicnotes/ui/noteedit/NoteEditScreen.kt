@@ -3,7 +3,9 @@ package com.portfolio.basicnotes.ui.noteedit
 import androidx.activity.compose.BackHandler
 import androidx.annotation.ColorRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.Scaffold
@@ -35,28 +38,17 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
 import com.portfolio.basicnotes.R
+import com.portfolio.basicnotes.data.NoteColorPalette
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
 
-object NoteColorPalette {
-    val colors: List< Int> = listOf(
-        R.color.post_it_gray,
-        R.color.post_it_yellow,
-        R.color.post_it_blue,
-        R.color.post_it_green,
-        R.color.post_it_pink,
-        R.color.post_it_orange,
-        R.color.post_it_purple,
-        R.color.post_it_white
-    )
-}
 
 @Composable
 fun NoteEditScreen(
     modifier: Modifier = Modifier,
-    onOpenDrawer: () -> Unit,
     onBackPressed: () -> Unit,
     viewModel: NoteEditScreenViewModel = hiltViewModel()
 ) {
@@ -66,46 +58,52 @@ fun NoteEditScreen(
         onBackLogic(viewModel, onBackPressed)
     }
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            NoteEditTopAppBar(
-                openDrawer = onOpenDrawer,
-                onBackPressed = { onBackLogic(viewModel, onBackPressed) },
-                onDeletePressed = { viewModel.deleteNoteAndGoBack(onBackPressed) }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onBackLogic(viewModel, onBackPressed) }) {
-                Icon(Icons.Default.Check, contentDescription = stringResource(id = R.string.content_description_save))
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                NoteEditTopAppBar(
+                    onBackPressed = { onBackLogic(viewModel, onBackPressed) },
+                    onDeletePressed = { viewModel.deleteNoteAndGoBack(onBackPressed) }
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { onBackLogic(viewModel, onBackPressed) },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = stringResource(id = R.string.content_description_save)
+                    )
+                }
+            }
+        ) {
+            if (uiState.value.stateLoaded) {
+                NoteEditor(
+                    onChooseColor = { viewModel.updateColor(it) },
+                    chosenColor = uiState.value.noteColor,
+                    title = uiState.value.title,
+                    content = uiState.value.content,
+                    onContentChange = { viewModel.updateContent(it) },
+                    onTitleChange = { viewModel.updateTitle(it) },
+                    modifier = Modifier
+                        .padding(paddingValues = it)
+                        .fillMaxSize(),
+                    focusOnTitle = viewModel.noteIsNew()
+                )
+            } else {
+                LoadingAnimation(
+                    modifier = Modifier
+                        .padding(paddingValues = it)
+                        .fillMaxSize()
+                )
             }
         }
-    ) {
-        if (uiState.value.stateLoaded) {
-            NoteEditor(
-                onChooseColor = { viewModel.updateColor(it) },
-                chosenColor = uiState.value.noteColor,
-                title = uiState.value.title,
-                content = uiState.value.content,
-                onContentChange = { viewModel.updateContent(it) },
-                onTitleChange = { viewModel.updateTitle(it) },
-                modifier = Modifier
-                    .padding(paddingValues = it)
-                    .fillMaxSize(),
-                focusOnTitle = viewModel.noteIsNew()
-            )
-        } else {
-            LoadingAnimation(
-                modifier = Modifier
-                    .padding(paddingValues = it)
-                    .fillMaxSize()
-            )
-        }
-    }
 }
 
 @Composable
-private fun NoteEditor(
+fun NoteEditor(
     modifier: Modifier = Modifier,
     onChooseColor: (Int) -> Unit,
     @ColorRes chosenColor: Int,
@@ -142,7 +140,7 @@ fun ColorChooser(@ColorRes chosenColor: Int, onColorChosen: (Int) -> Unit, modif
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
     ) {
-        items(NoteColorPalette.colors) {colorRes ->
+        items(NoteColorPalette.colors) { colorRes ->
             RadioButton(
                 selected = colorRes == chosenColor,
                 onClick = { onColorChosen(colorRes) },
@@ -203,4 +201,17 @@ private fun onBackLogic(
         viewModel.saveNoteAndGoBack(onBackPressed)
     else
         onBackPressed()
+}
+
+@Preview
+@Composable
+fun NoteEditorPreview() {
+    NoteEditor(
+        onChooseColor = {},
+        chosenColor = R.color.post_it_orange,
+        title = "Title",
+        content = "Content",
+        onContentChange = {},
+        onTitleChange = {}
+    )
 }

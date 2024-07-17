@@ -11,6 +11,10 @@
     <string name="about_app_title">About Basic Notes</string>
     <string name="about_app_ok">Ok</string>
 
+    <string name="notes_grid_bottom_bar_label">Grid</string>
+    <string name="drawer_label">Drawer</string>
+    <string name="notes_list_bottom_bar_label">List</string>
+
 
     <string name="drawer_item_about">About</string>
 </resources>

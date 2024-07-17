@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,15 +25,26 @@ class DefaultNoteRepository @Inject constructor(
         { localDatasource.deleteNote(noteId.toLocalNote()) }
     }
 
+    override suspend fun deleteNotes(noteIds: List<Int>) {
+        withContext(Dispatchers.IO)
+        { localDatasource.deleteNotes(noteIds.map { it.toLocalNote() }) }
+    }
+
     override suspend fun createNote(title: String, content: String, color: Int) {
         withContext(Dispatchers.IO) {
-            localDatasource.createNote(LocalNote(title = title, content = content, color = color))
+            localDatasource.createNote(LocalNote(title = title, content = content, color = color, date = LocalDate.now()))
         }
     }
 
     override suspend fun updateNote(noteId: Int, title: String, content: String, color: Int) {
         withContext(Dispatchers.IO) {
-            localDatasource.updateNote(LocalNote(id = noteId, title = title, content = content, color = color))
+            localDatasource.updateNote(LocalNote(id = noteId, title = title, content = content, color = color, date = LocalDate.now()))
+        }
+    }
+
+    override suspend fun updateNotesColor(noteIds: List<Int>, color: Int) {
+        withContext(Dispatchers.IO) {
+            localDatasource.updateNotesColor(notes = noteIds, color = color)
         }
     }
 
@@ -42,9 +54,9 @@ class DefaultNoteRepository @Inject constructor(
 }
 
 fun LocalNote.toNote(): Note {
-    return Note(id = id, title = title, content = content, date = "placeholder date", noteColor = color)
+    return Note(id = id, title = title, content = content, date = date, noteColor = color)
 }
 
 fun Int.toLocalNote(): LocalNote {
-    return LocalNote(this, "", "", 0)
+    return LocalNote(this, "", "", 0, date = LocalDate.now())
 }

@@ -16,4 +16,5 @@
     <color name="post_it_purple">#FFBA68C8</color>
     <color name="post_it_white">#FFFFFFFF</color>
     <color name="post_it_gray">#FFB0BEC5</color>
+    <color name="selected_note_border">#FF51f3f5</color>
 </resources>

@@ -24,9 +24,15 @@ interface NoteDao {
     @Delete
     fun deleteNote(note: LocalNote)
 
+    @Delete
+    fun deleteNotes(notes: List<LocalNote>)
+
     @Insert
     fun createNote(note: LocalNote)
 
     @Update
     fun updateNote(note: LocalNote)
+
+    @Query("UPDATE note SET color = :color WHERE id in (:notes)")
+    fun updateNotesColor(notes: List<Int>, color: Int)
 }
