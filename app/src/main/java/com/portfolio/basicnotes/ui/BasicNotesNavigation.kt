@@ -1,7 +1,6 @@
 package com.portfolio.basicnotes.ui
 
 import android.util.Log
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.portfolio.basicnotes.ui.BasicNotesRouteArgs.NOTE_ID_ARG
 import com.portfolio.basicnotes.ui.BasicNotesScreens.NOTES_GRID_SCREEN

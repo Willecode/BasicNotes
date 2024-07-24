@@ -6,7 +6,6 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 @Database(entities = [LocalNote::class], version = 1)
 @TypeConverters(Converters::class)

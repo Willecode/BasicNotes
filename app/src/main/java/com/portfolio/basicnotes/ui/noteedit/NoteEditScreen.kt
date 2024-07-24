@@ -3,9 +3,7 @@ package com.portfolio.basicnotes.ui.noteedit
 import androidx.activity.compose.BackHandler
 import androidx.annotation.ColorRes
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,10 +38,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.data.NoteColorPalette
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
+import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
 
 
 @Composable

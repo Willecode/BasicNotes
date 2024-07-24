@@ -1,7 +1,5 @@
 package com.portfolio.basicnotes.data
 
-import com.portfolio.basicnotes.R
-
 val mockEntries : List<Note> = listOf(
 //    Note(0,"My life", "lorem ipsum sample ", "03/07/2024"),
 //    Note(1,"shopping list", "lorem ipsum sample text sample text sample text", "03/07/2024"),
