@@ -44,6 +44,7 @@ import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
 import com.portfolio.basicnotes.ui.util.AdaptiveTopBar
 import com.portfolio.basicnotes.ui.util.BasicNoteActionBarType
 import com.portfolio.basicnotes.ui.util.ColorPickerDialog
+import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
 import java.time.LocalDate
 
@@ -56,6 +57,8 @@ fun NotesGridScreen(
     onDrawerOpen: () -> Unit
 ) {
     val uiState = notesGridviewModel.uiState.collectAsState()
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
     if (uiState.value.stateLoaded) {
         val isSelectionMode = uiState.value.isSelectionMode
         NotesGridScaffold(
@@ -71,7 +74,7 @@ fun NotesGridScreen(
             onNoteLongClicked = { notesGridviewModel.toggleNoteSelected(it) },
             actionBarType = actionBarType,
             onDrawerOpen = onDrawerOpen,
-            onDeletePressed = { notesGridviewModel.deleteSelectedNotes()},
+            onDeletePressed = { showDeleteConfirmDialog = true },
             actionIconsVisible = isSelectionMode,
             onColorPicked = { notesGridviewModel.changeSelectedNotesColor(it) },
             onDeselectAllPressed = { notesGridviewModel.deselectAllNotes() },
@@ -82,6 +85,17 @@ fun NotesGridScreen(
         LoadingAnimation(
             modifier = modifier
                 .fillMaxSize()
+        )
+    }
+    if (showDeleteConfirmDialog) {
+        DeleteConfirmDialog(
+            text = "Selected notes are going to be permanently deleted. Are you sure?",
+            confirmButtonText = "Yes",
+            onCancel = { showDeleteConfirmDialog = false },
+            onConfirm = {
+                notesGridviewModel.deleteSelectedNotes()
+                showDeleteConfirmDialog = false
+            }
         )
     }
 }

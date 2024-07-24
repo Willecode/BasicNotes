@@ -26,7 +26,10 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -40,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.data.NoteColorPalette
+import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
 import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
 
@@ -51,53 +55,61 @@ fun NoteEditScreen(
     viewModel: NoteEditScreenViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
-
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     BackHandler {
         onBackLogic(viewModel, onBackPressed)
     }
 
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                NoteEditTopAppBar(
-                    onBackPressed = { onBackLogic(viewModel, onBackPressed) },
-                    onDeletePressed = { viewModel.deleteNoteAndGoBack(onBackPressed) }
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { onBackLogic(viewModel, onBackPressed) },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                ) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = stringResource(id = R.string.content_description_save)
-                    )
-                }
-            }
-        ) {
-            if (uiState.value.stateLoaded) {
-                NoteEditor(
-                    onChooseColor = { viewModel.updateColor(it) },
-                    chosenColor = uiState.value.noteColor,
-                    title = uiState.value.title,
-                    content = uiState.value.content,
-                    onContentChange = { viewModel.updateContent(it) },
-                    onTitleChange = { viewModel.updateTitle(it) },
-                    modifier = Modifier
-                        .padding(paddingValues = it)
-                        .fillMaxSize(),
-                    focusOnTitle = viewModel.noteIsNew()
-                )
-            } else {
-                LoadingAnimation(
-                    modifier = Modifier
-                        .padding(paddingValues = it)
-                        .fillMaxSize()
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            NoteEditTopAppBar(
+                onBackPressed = { onBackLogic(viewModel, onBackPressed) },
+                onDeletePressed = { showDeleteConfirmDialog = true }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onBackLogic(viewModel, onBackPressed) },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            ) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = stringResource(id = R.string.content_description_save)
                 )
             }
         }
+    ) {
+        if (uiState.value.stateLoaded) {
+            NoteEditor(
+                onChooseColor = { viewModel.updateColor(it) },
+                chosenColor = uiState.value.noteColor,
+                title = uiState.value.title,
+                content = uiState.value.content,
+                onContentChange = { viewModel.updateContent(it) },
+                onTitleChange = { viewModel.updateTitle(it) },
+                modifier = Modifier
+                    .padding(paddingValues = it)
+                    .fillMaxSize(),
+                focusOnTitle = viewModel.noteIsNew()
+            )
+        } else {
+            LoadingAnimation(
+                modifier = Modifier
+                    .padding(paddingValues = it)
+                    .fillMaxSize()
+            )
+        }
+    }
+    if (showDeleteConfirmDialog) {
+        DeleteConfirmDialog(
+            text = "Are you sure you want to delete the note?",
+            confirmButtonText = "Yes",
+            onCancel = { showDeleteConfirmDialog = false },
+            onConfirm = { viewModel.deleteNoteAndGoBack(onBackPressed) }
+        )
+    }
 }
 
 @Composable

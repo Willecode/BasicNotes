@@ -50,6 +50,7 @@ import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
 import com.portfolio.basicnotes.ui.util.AdaptiveTopBar
 import com.portfolio.basicnotes.ui.util.BasicNoteActionBarType
 import com.portfolio.basicnotes.ui.util.ColorPickerDialog
+import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
 import com.portfolio.basicnotes.ui.util.NoteListContentType
 import java.time.LocalDate
@@ -65,6 +66,8 @@ fun NoteListScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showPaletteDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
     if (uiState.value.stateLoaded) {
         Scaffold (
             modifier = modifier,
@@ -72,7 +75,7 @@ fun NoteListScreen(
                 AdaptiveTopBar(
                     actionBarType = actionBarType,
                     onDrawerOpen = onDrawerOpen,
-                    onDeletePressed = { viewModel.deleteSelectedNotes() },
+                    onDeletePressed = { showDeleteConfirmDialog = true },
                     actionIconsVisible = shouldActionIconsBeVisible(uiState),
                     onPalettePressed = { showPaletteDialog = true },
                     onSelectAllPressed = { viewModel.selectAllNotes() },
@@ -121,6 +124,17 @@ fun NoteListScreen(
                         showPaletteDialog = false
                     },
                     onCancelPressed = { showPaletteDialog = false }
+                )
+            }
+            if (showDeleteConfirmDialog) {
+                DeleteConfirmDialog(
+                    text = "Selected notes are going to be permanently deleted. Are you sure?",
+                    confirmButtonText = "Yes",
+                    onCancel = { showDeleteConfirmDialog = false },
+                    onConfirm = {
+                        viewModel.deleteSelectedNotes()
+                        showDeleteConfirmDialog = false
+                    }
                 )
             }
         }

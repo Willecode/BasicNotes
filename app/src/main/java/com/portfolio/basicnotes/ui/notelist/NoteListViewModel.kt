@@ -114,6 +114,7 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
                 noteRepository.deleteNotes(selectedNotes)
             }
             _activeNote.value = null
+            deselectAllNotes()
         }
     }
 
