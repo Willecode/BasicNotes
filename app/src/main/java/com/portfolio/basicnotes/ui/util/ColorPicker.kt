@@ -1,27 +1,27 @@
 package com.portfolio.basicnotes.ui.util
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.data.NoteColorPalette
 import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun ColorPickerDialog(
@@ -30,7 +30,10 @@ fun ColorPickerDialog(
 ) {
     AlertDialog(
         icon = {
-            Icon(painter = painterResource(id = R.drawable.outline_palette_24), contentDescription = "")
+            Icon(
+                painter = painterResource(id = R.drawable.outline_palette_24),
+                contentDescription = ""
+            )
         },
         title = {
             Text(text = "Choose new color for selected notes")
@@ -52,31 +55,46 @@ fun ColorPickerDialog(
 
 @Composable
 fun ColorPicker(
-    colors: List< Int>,
+    colors: List<Int>,
     onColorPicked: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalGrid (
+    val selected = remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    val buttonsEnabled = remember {
+        mutableStateOf(true)
+    }
+
+    selected.value?.let {
+        LaunchedEffect(key1 = it) {
+            delay(500L)
+            onColorPicked(it)
+        }
+    }
+
+    LazyVerticalGrid(
         verticalArrangement = Arrangement.Center,
         horizontalArrangement = Arrangement.Center,
         columns = GridCells.Fixed(3),
         modifier = modifier
     ) {
         items(colors) { colorRes ->
-            Card(
-                onClick = {onColorPicked(colorRes)},
-                colors = CardColors(
-                    colorResource(id = colorRes),
-                    colorResource(id = colorRes),
-                    colorResource(id = colorRes),
-                    colorResource(id = colorRes)
+            RadioButton(
+                selected = colorRes == selected.value,
+                onClick = {
+                    buttonsEnabled.value = false
+                    selected.value = colorRes
+                },
+                colors = RadioButtonColors(
+                    selectedColor = colorResource(id = colorRes),
+                    unselectedColor = colorResource(id = colorRes),
+                    disabledSelectedColor = colorResource(id = colorRes),
+                    disabledUnselectedColor = colorResource(id = colorRes)
                 ),
-                modifier = Modifier
-                    .width(30.dp)
-                    .height(30.dp)
-                    .fillMaxSize()
-
-            ) {}
+                enabled = buttonsEnabled.value
+            )
         }
     }
 }
