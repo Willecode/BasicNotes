@@ -15,6 +15,13 @@
     <string name="drawer_label">Drawer</string>
     <string name="notes_list_bottom_bar_label">List</string>
 
-
     <string name="drawer_item_about">About</string>
+
+    <string name="successfully_saved_note_message">Note updated</string>
+    <string name="successfully_added_note_message">Note created</string>
+    <string name="successfully_deleted_note_message">Note deleted</string>
+    <string name="discarded_note_message">Note discarded</string>
+    <string name="successfully_deleted_notes_message">Note(s) deleted</string>
+    <string name="successfully_changed_notes_color_message">Note(s) color changed</string>
+
 </resources>

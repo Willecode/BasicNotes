@@ -1,6 +1,7 @@
 package com.portfolio.basicnotes.ui.notesgrid
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -19,9 +20,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +47,7 @@ import com.portfolio.basicnotes.data.Note
 import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
 import com.portfolio.basicnotes.ui.util.AdaptiveTopBar
 import com.portfolio.basicnotes.ui.util.BasicNoteActionBarType
+import com.portfolio.basicnotes.ui.util.BasicNotesSnackBar
 import com.portfolio.basicnotes.ui.util.ColorPickerDialog
 import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
@@ -54,31 +59,39 @@ fun NotesGridScreen(
     notesGridviewModel: NotesGridviewModel = hiltViewModel(),
     onNoteClicked: (Int) -> Unit,
     actionBarType: BasicNoteActionBarType,
-    onDrawerOpen: () -> Unit
+    onDrawerOpen: () -> Unit,
+    @StringRes userMessage: Int?
 ) {
-    val uiState = notesGridviewModel.uiState.collectAsState()
-    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    val uiState = notesGridviewModel.uiState.collectAsState().value
 
-    if (uiState.value.stateLoaded) {
-        val isSelectionMode = uiState.value.isSelectionMode
+    userMessage?.let {
+        LaunchedEffect(key1 = it) {
+            notesGridviewModel.updateUserMessage(it)
+        }
+    }
+
+    if (uiState.stateLoaded) {
+        val isSelectionMode = uiState.isSelectionMode
         NotesGridScaffold(
             modifier = modifier,
-            uiState = uiState,
-            onNoteClicked =
-                if (isSelectionMode) {
-                    { notesGridviewModel.toggleNoteSelected(it) }
-                }
-                else {
-                    onNoteClicked
-                },
             onNoteLongClicked = { notesGridviewModel.toggleNoteSelected(it) },
             actionBarType = actionBarType,
             onDrawerOpen = onDrawerOpen,
-            onDeletePressed = { showDeleteConfirmDialog = true },
-            actionIconsVisible = isSelectionMode,
+            onDelete = { notesGridviewModel.deleteSelectedNotes() },
             onColorPicked = { notesGridviewModel.changeSelectedNotesColor(it) },
+            onSelectAllPressed = { notesGridviewModel.selectAllNotes() },
             onDeselectAllPressed = { notesGridviewModel.deselectAllNotes() },
-            onSelectAllPressed = { notesGridviewModel.selectAllNotes() }
+            actionIconsVisible = isSelectionMode,
+            onUserMessageDisplayed = { notesGridviewModel.setUserMessageToNull() },
+            userMessage = uiState.userMessage,
+            noteSelectionStates = uiState.noteSelectionStates,
+            notes = uiState.notes,
+            onNoteClicked =
+            if (isSelectionMode) {
+                { notesGridviewModel.toggleNoteSelected(it) }
+            } else {
+                onNoteClicked
+            },
         )
     }
     else {
@@ -87,40 +100,43 @@ fun NotesGridScreen(
                 .fillMaxSize()
         )
     }
-    if (showDeleteConfirmDialog) {
-        DeleteConfirmDialog(
-            text = "Selected notes are going to be permanently deleted. Are you sure?",
-            confirmButtonText = "Yes",
-            onCancel = { showDeleteConfirmDialog = false },
-            onConfirm = {
-                notesGridviewModel.deleteSelectedNotes()
-                showDeleteConfirmDialog = false
-            }
-        )
-    }
 }
 
 @Composable
 fun NotesGridScaffold(
     modifier: Modifier = Modifier,
-    uiState: State<UiState>,
     onNoteClicked: (Int) -> Unit,
     onNoteLongClicked: (Int) -> Unit,
     actionBarType: BasicNoteActionBarType,
     onDrawerOpen: () -> Unit,
-    onDeletePressed: () -> Unit,
+    onDelete: () -> Unit,
     onColorPicked: (Int) -> Unit,
     onSelectAllPressed: () -> Unit,
     onDeselectAllPressed: () -> Unit,
-    actionIconsVisible: Boolean
+    actionIconsVisible: Boolean,
+    notes: List<Note>,
+    noteSelectionStates: Map<Int, Boolean>,
+    @StringRes userMessage: Int?,
+    onUserMessageDisplayed: () -> Unit
 ) {
-    var showPaletteDialog by remember{ mutableStateOf(false) }
+    var showPaletteDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { data ->
+                    BasicNotesSnackBar(data = data)
+                }
+            )
+        },
         topBar = {
             AdaptiveTopBar(
                 actionBarType = actionBarType,
                 onDrawerOpen = onDrawerOpen,
-                onDeletePressed = onDeletePressed,
+                onDeletePressed = { showDeleteConfirmDialog = true },
                 actionIconsVisible = actionIconsVisible,
                 onPalettePressed = { showPaletteDialog = true },
                 onSelectAllPressed = onSelectAllPressed,
@@ -132,9 +148,18 @@ fun NotesGridScaffold(
             onNoteClicked = onNoteClicked,
             onNoteLongClicked = onNoteLongClicked,
             modifier = modifier.padding(paddingValues),
-            notes = uiState.value.notes,
-            noteSelectionStates = uiState.value.noteSelectionStates
+            notes = notes,
+            noteSelectionStates = noteSelectionStates
         )
+
+        // Display user message if there is one
+        userMessage?.let {
+            val snackbarText = stringResource(it)
+            LaunchedEffect(it) {
+                snackbarHostState.showSnackbar(snackbarText)
+                onUserMessageDisplayed()
+            }
+        }
     }
     if (showPaletteDialog) {
         ColorPickerDialog(
@@ -142,7 +167,18 @@ fun NotesGridScaffold(
                 onColorPicked(it)
                 showPaletteDialog = false
             },
-            onCancelPressed = {showPaletteDialog = false}
+            onCancelPressed = { showPaletteDialog = false }
+        )
+    }
+    if (showDeleteConfirmDialog) {
+        DeleteConfirmDialog(
+            text = "Selected notes are going to be permanently deleted. Are you sure?",
+            confirmButtonText = "Yes",
+            onCancel = { showDeleteConfirmDialog = false },
+            onConfirm = {
+                onDelete()
+                showDeleteConfirmDialog = false
+            }
         )
     }
 }
@@ -168,17 +204,12 @@ private fun NotesGrid(
                 isSelected = isNoteSelected(noteSelectionStates, entry),
                 modifier = Modifier.combinedClickable(
                     onClick = { onNoteClicked(entry.id) },
-                    onLongClick = {onNoteLongClicked(entry.id)}
+                    onLongClick = { onNoteLongClicked(entry.id) }
                 )
             )
         }
     }
 }
-
-private fun isNoteSelected(
-    noteSelectionStates: Map<Int, Boolean>,
-    note: Note
-) = noteSelectionStates[note.id] ?: false
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,13 +234,17 @@ fun EntryCard(
             )
         else null
     ) {
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(all = 15.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = note.title, fontWeight = FontWeight.Bold, fontSize = integerResource(id = R.integer.large_text).sp)
+            Text(
+                text = note.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = integerResource(id = R.integer.large_text).sp
+            )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = note.content,
@@ -219,6 +254,12 @@ fun EntryCard(
         }
     }
 }
+
+private fun isNoteSelected(
+    noteSelectionStates: Map<Int, Boolean>,
+    note: Note
+) = noteSelectionStates[note.id] ?: false
+
 
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -232,22 +273,22 @@ private fun PreviewEntryCard() {
             onNoteLongClicked = {},
             notes = generateMockNotes(),
             noteSelectionStates = mapOf(
-                Pair<Int,Boolean>(0, true),
-                Pair<Int,Boolean>(1, true),
-                Pair<Int,Boolean>(2, true),
-                Pair<Int,Boolean>(3, true),
-                Pair<Int,Boolean>(4, true),
-                Pair<Int,Boolean>(5, true),
-                Pair<Int,Boolean>(6, true),
-                Pair<Int,Boolean>(7, true),
-                Pair<Int,Boolean>(8, true)
+                Pair<Int, Boolean>(0, true),
+                Pair<Int, Boolean>(1, true),
+                Pair<Int, Boolean>(2, true),
+                Pair<Int, Boolean>(3, true),
+                Pair<Int, Boolean>(4, true),
+                Pair<Int, Boolean>(5, true),
+                Pair<Int, Boolean>(6, true),
+                Pair<Int, Boolean>(7, true),
+                Pair<Int, Boolean>(8, true)
             )
         )
     }
 }
 
 private fun generateMockNotes(): List<Note> {
-    return  listOf(
+    return listOf(
         Note(
             id = 0,
             title = "Title",

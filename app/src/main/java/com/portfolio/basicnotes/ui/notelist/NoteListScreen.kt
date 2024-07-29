@@ -1,6 +1,7 @@
 package com.portfolio.basicnotes.ui.notelist
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -23,9 +24,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +54,7 @@ import com.portfolio.basicnotes.ui.noteedit.NoteEditor
 import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
 import com.portfolio.basicnotes.ui.util.AdaptiveTopBar
 import com.portfolio.basicnotes.ui.util.BasicNoteActionBarType
+import com.portfolio.basicnotes.ui.util.BasicNotesSnackBar
 import com.portfolio.basicnotes.ui.util.ColorPickerDialog
 import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
@@ -62,14 +68,30 @@ fun NoteListScreen(
     onNoteClicked: (Int) -> Unit,
     contentType: NoteListContentType,
     actionBarType: BasicNoteActionBarType,
-    onDrawerOpen: () -> Unit
+    onDrawerOpen: () -> Unit,
+    @StringRes userMessage: Int?
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showPaletteDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
+    userMessage?.let {
+        LaunchedEffect(key1 = it) {
+            viewModel.updateUserMessage(it)
+        }
+    }
+
     if (uiState.value.stateLoaded) {
+        val snackbarHostState = remember { SnackbarHostState() }
         Scaffold (
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    snackbar = { data ->
+                        BasicNotesSnackBar(data = data)
+                    }
+                )
+            },
             modifier = modifier,
             topBar = {
                 AdaptiveTopBar(
@@ -117,6 +139,16 @@ fun NoteListScreen(
                     )
                 }
             }
+
+            // Display user message if there is one
+            uiState.value.userMessage?.let {
+                val snackbarText = stringResource(it)
+                LaunchedEffect(it) {
+                    snackbarHostState.showSnackbar(snackbarText)
+                    viewModel.setUserMessageToNull()
+                }
+            }
+
             if (showPaletteDialog) {
                 ColorPickerDialog(
                     onColorPicked = {
@@ -126,6 +158,7 @@ fun NoteListScreen(
                     onCancelPressed = { showPaletteDialog = false }
                 )
             }
+
             if (showDeleteConfirmDialog) {
                 DeleteConfirmDialog(
                     text = "Selected notes are going to be permanently deleted. Are you sure?",

@@ -1,10 +1,12 @@
 package com.portfolio.basicnotes.ui.notelist
 
 import androidx.annotation.ColorRes
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.portfolio.basicnotes.data.Note
 import com.portfolio.basicnotes.data.NoteRepository
+import com.portfolio.basicnotes.ui.NoteEditResult
 import com.portfolio.basicnotes.ui.util.NoteSelectionTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,11 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
     private val _noteSelectionStates = noteSelectionTracker.noteSelectionStates
     private val _isSelectionMode = noteSelectionTracker.isSelectionMode
 
+    /**
+     * Message that should be shown to user via snackbar.
+     */
+    private val _userMessage = MutableStateFlow<Int?>(null)
+
     private val _notesFlow = noteRepository.observeAllNotes()
         .map {
             // Sanitize newlines
@@ -41,14 +48,16 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
         _notesFlow,
         _isSelectionMode,
         _noteSelectionStates,
-        _activeNote
-    ) { notes, isSelectionMode, noteSelectionStates, activeNote ->
+        _activeNote,
+        _userMessage
+    ) { notes, isSelectionMode, noteSelectionStates, activeNote, userMessage ->
         NoteListUiState(
             notes = notes,
             stateLoaded = true,
             isSelectionMode = isSelectionMode,
             noteSelectionStates = noteSelectionStates,
-            activeNote = activeNote
+            activeNote = activeNote,
+            userMessage = userMessage
         )
     }.stateIn(
         scope = viewModelScope,
@@ -91,13 +100,15 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
 
     fun saveNote() {
         viewModelScope.launch {
-            if (_activeNote.value != null)
+            if (_activeNote.value != null) {
                 noteRepository.updateNote(
                     noteId = _activeNote.value!!.id,
                     title = _activeNote.value!!.title,
                     content = _activeNote.value!!.content,
                     color = _activeNote.value!!.noteColor
                 )
+                updateUserMessage(NoteEditResult.EditResultOk.userMessage)
+            }
         }
     }
 
@@ -112,6 +123,7 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
         if (selectedNotes.isNotEmpty()) {
             viewModelScope.launch {
                 noteRepository.deleteNotes(selectedNotes)
+                updateUserMessage(NoteEditResult.NotesDeletedOk.userMessage)
             }
             _activeNote.value = null
             deselectAllNotes()
@@ -145,9 +157,19 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
         if (selectedNotes.isNotEmpty()) {
             viewModelScope.launch {
                 noteRepository.updateNotesColor(selectedNotes, color)
+                updateUserMessage(NoteEditResult.NotesColorChangedOk.userMessage)
             }
         }
     }
+
+    fun updateUserMessage(@StringRes msg: Int) {
+        _userMessage.value = msg
+    }
+
+    fun setUserMessageToNull() {
+        _userMessage.value = null
+    }
+
 }
 
 data class NoteListUiState (
@@ -155,5 +177,7 @@ data class NoteListUiState (
     val stateLoaded: Boolean = false,
     val isSelectionMode: Boolean = false,
     val noteSelectionStates: Map<Int, Boolean> = emptyMap(),
-    val activeNote: Note? = null
+    val activeNote: Note? = null,
+    val userMessage: Int? = null
+
 )

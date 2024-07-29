@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.portfolio.basicnotes.ui.BasicNotesRouteArgs.NOTE_ID_ARG
+import com.portfolio.basicnotes.ui.BasicNotesRouteArgs.USER_MESSAGE_ARG
 import com.portfolio.basicnotes.ui.BasicNotesRoutes.NOTES_GRID_ROUTE
 import com.portfolio.basicnotes.ui.BasicNotesRoutes.NOTES_LIST_ROUTE
 import com.portfolio.basicnotes.ui.BasicNotesRoutes.NOTE_EDIT_ROUTE
@@ -49,14 +50,17 @@ fun BasicNotesNavGraph(
         modifier = modifier
             .fillMaxSize()
     ) {
-        composable(route = NOTES_GRID_ROUTE) {
+        composable(
+            route = NOTES_GRID_ROUTE
+        ) { entry ->
             BasicNotesModalDrawer(
                 drawerState = drawerState
             ) {
                 NotesGridScreen(
                     onNoteClicked = { navigation.navigateToNoteEditScreen(it) },
                     actionBarType = actionBarType,
-                    onDrawerOpen = { coroutineScope.launch { drawerState.open() } }
+                    onDrawerOpen = { coroutineScope.launch { drawerState.open() } },
+                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG)
                 )
             }
         }
@@ -69,11 +73,16 @@ fun BasicNotesNavGraph(
         ) {
             NoteEditScreen(
                 onBackPressed = {navController.navigateUp()},
+                setResult = { result ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(USER_MESSAGE_ARG, result.userMessage)
+                },
                 modifier = Modifier.fillMaxSize()
             )
         }
 
-        composable(route = NOTES_LIST_ROUTE) {
+        composable(route = NOTES_LIST_ROUTE) { entry ->
             BasicNotesModalDrawer(
                 drawerState = drawerState
             ) {
@@ -81,7 +90,8 @@ fun BasicNotesNavGraph(
                     onNoteClicked = { navigation.navigateToNoteEditScreen(it) },
                     contentType = contentType,
                     actionBarType = actionBarType,
-                    onDrawerOpen = { coroutineScope.launch { drawerState.open() } }
+                    onDrawerOpen = { coroutineScope.launch { drawerState.open() } },
+                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG)
                 )
             }
         }

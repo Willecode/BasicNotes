@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.data.NoteColorPalette
+import com.portfolio.basicnotes.ui.NoteEditResult
 import com.portfolio.basicnotes.ui.util.DeleteConfirmDialog
 import com.portfolio.basicnotes.ui.util.LoadingAnimation
 import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
@@ -52,25 +53,42 @@ import com.portfolio.basicnotes.ui.util.NoteEditTopAppBar
 fun NoteEditScreen(
     modifier: Modifier = Modifier,
     onBackPressed: () -> Unit,
+    setResult: (NoteEditResult) -> Unit,
     viewModel: NoteEditScreenViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     BackHandler {
-        onBackLogic(viewModel, onBackPressed)
+        onBackLogic(
+            viewModel = viewModel,
+            setResult = setResult,
+            onBackPressed = onBackPressed
+        )
     }
 
     Scaffold(
         modifier = modifier,
         topBar = {
             NoteEditTopAppBar(
-                onBackPressed = { onBackLogic(viewModel, onBackPressed) },
+                onBackPressed = {
+                    onBackLogic(
+                        viewModel = viewModel,
+                        setResult = setResult,
+                        onBackPressed = onBackPressed
+                    )
+                },
                 onDeletePressed = { showDeleteConfirmDialog = true }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onBackLogic(viewModel, onBackPressed) },
+                onClick = {
+                    onBackLogic(
+                        viewModel = viewModel,
+                        setResult = setResult,
+                        onBackPressed = onBackPressed
+                    )
+                },
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             ) {
@@ -107,7 +125,7 @@ fun NoteEditScreen(
             text = "Are you sure you want to delete the note?",
             confirmButtonText = "Yes",
             onCancel = { showDeleteConfirmDialog = false },
-            onConfirm = { viewModel.deleteNoteAndGoBack(onBackPressed) }
+            onConfirm = { viewModel.deleteNoteAndGoBack(onBackPressed, setResult) }
         )
     }
 }
@@ -205,12 +223,10 @@ private fun NoteEditorField(
 
 private fun onBackLogic(
     viewModel: NoteEditScreenViewModel,
+    setResult: (NoteEditResult) -> Unit,
     onBackPressed: () -> Unit
 ) {
-    if (viewModel.noteIsSaveable())
-        viewModel.saveNoteAndGoBack(onBackPressed)
-    else
-        onBackPressed()
+    viewModel.saveNoteAndGoBack(onBackPressed, setResult)
 }
 
 @Preview

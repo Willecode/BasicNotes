@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.data.NoteRepository
 import com.portfolio.basicnotes.ui.BasicNotesRouteArgs
+import com.portfolio.basicnotes.ui.NoteEditResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,9 +48,13 @@ class NoteEditScreenViewModel @Inject constructor(
         }
     }
 
-    fun saveNoteAndGoBack(goBackFunction: () -> Unit) {
+    fun saveNoteAndGoBack(goBackFunction: () -> Unit, setResult: (NoteEditResult) -> Unit) {
         viewModelScope.launch {
-            saveNote()
+            if (noteIsSaveable()) {
+                saveNote()
+                setResult(if (_noteId == null) NoteEditResult.CreateResultOk else NoteEditResult.EditResultOk)
+            } else
+                setResult(NoteEditResult.NoteDiscarded)
             goBackFunction()
         }
     }
@@ -93,9 +98,11 @@ class NoteEditScreenViewModel @Inject constructor(
         return(_uiState.value.stateLoaded && noteContentSaveable())
     }
 
-    fun deleteNoteAndGoBack( goBackFunction: () -> Unit ) {
+    fun deleteNoteAndGoBack(goBackFunction: () -> Unit, setResult: (NoteEditResult) -> Unit) {
         viewModelScope.launch{
+            // TODO: error handling - if operation fails set result delete failed.
             deleteNote()
+            setResult(NoteEditResult.DeleteResultOk)
             goBackFunction()
         }
     }
