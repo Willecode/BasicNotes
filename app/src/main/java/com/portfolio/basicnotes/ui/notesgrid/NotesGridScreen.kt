@@ -84,7 +84,7 @@ fun NotesGridScreen(
             actionIconsVisible = isSelectionMode,
             onUserMessageDisplayed = { notesGridviewModel.setUserMessageToNull() },
             userMessage = uiState.userMessage,
-            noteSelectionStates = uiState.noteSelectionStates,
+            selectedNotes = uiState.selectedNotes,
             notes = uiState.notes,
             onNoteClicked =
             if (isSelectionMode) {
@@ -115,7 +115,7 @@ fun NotesGridScaffold(
     onDeselectAllPressed: () -> Unit,
     actionIconsVisible: Boolean,
     notes: List<Note>,
-    noteSelectionStates: Map<Int, Boolean>,
+    selectedNotes: Set<Int>,
     @StringRes userMessage: Int?,
     onUserMessageDisplayed: () -> Unit
 ) {
@@ -149,7 +149,7 @@ fun NotesGridScaffold(
             onNoteLongClicked = onNoteLongClicked,
             modifier = modifier.padding(paddingValues),
             notes = notes,
-            noteSelectionStates = noteSelectionStates
+            selectedNotes = selectedNotes
         )
 
         // Display user message if there is one
@@ -190,7 +190,7 @@ private fun NotesGrid(
     onNoteLongClicked: (Int) -> Unit,
     modifier: Modifier = Modifier,
     notes: List<Note>,
-    noteSelectionStates: Map<Int, Boolean>
+    selectedNotes: Set<Int>
 ) {
     LazyVerticalStaggeredGrid(
         modifier = modifier,
@@ -201,7 +201,7 @@ private fun NotesGrid(
         items(notes) { entry ->
             EntryCard(
                 note = entry,
-                isSelected = isNoteSelected(noteSelectionStates, entry),
+                isSelected = selectedNotes.contains(entry.id),
                 modifier = Modifier.combinedClickable(
                     onClick = { onNoteClicked(entry.id) },
                     onLongClick = { onNoteLongClicked(entry.id) }
@@ -255,12 +255,6 @@ fun EntryCard(
     }
 }
 
-private fun isNoteSelected(
-    noteSelectionStates: Map<Int, Boolean>,
-    note: Note
-) = noteSelectionStates[note.id] ?: false
-
-
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     widthDp = 500
@@ -272,17 +266,7 @@ private fun PreviewEntryCard() {
             onNoteClicked = {},
             onNoteLongClicked = {},
             notes = generateMockNotes(),
-            noteSelectionStates = mapOf(
-                Pair<Int, Boolean>(0, true),
-                Pair<Int, Boolean>(1, true),
-                Pair<Int, Boolean>(2, true),
-                Pair<Int, Boolean>(3, true),
-                Pair<Int, Boolean>(4, true),
-                Pair<Int, Boolean>(5, true),
-                Pair<Int, Boolean>(6, true),
-                Pair<Int, Boolean>(7, true),
-                Pair<Int, Boolean>(8, true)
-            )
+            selectedNotes = setOf(0, 1, 2, 3, 4, 5, 6, 7, 8)
         )
     }
 }

@@ -1,63 +1,47 @@
 package com.portfolio.basicnotes.ui.notelist
 
 import androidx.annotation.ColorRes
-import androidx.annotation.StringRes
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.portfolio.basicnotes.data.Note
 import com.portfolio.basicnotes.data.NoteRepository
 import com.portfolio.basicnotes.ui.NoteEditResult
-import com.portfolio.basicnotes.ui.util.NoteSelectionTracker
+import com.portfolio.basicnotes.ui.util.NoteViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+/**
+ * TODO: should sanitize newlines from the note list item content using:
+ *      it.map { note -> note.copy(content = note.content.replace("\n", ""))}
+ *
+ */
 @HiltViewModel
-class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepository) : ViewModel(){
+class NoteListViewModel @Inject constructor(
+    private val noteRepository: NoteRepository
+) : NoteViewModel(noteRepository) {
 
     // Active note is separate from selected notes. It is the one that is shown in NoteEditor.
     private val _activeNote = MutableStateFlow<Note?>(null)
 
-    // Note selection tracking
-    private val noteSelectionTracker = NoteSelectionTracker()
-    private val _noteSelectionStates = noteSelectionTracker.noteSelectionStates
-    private val _isSelectionMode = noteSelectionTracker.isSelectionMode
-
-    /**
-     * Message that should be shown to user via snackbar.
-     */
-    private val _userMessage = MutableStateFlow<Int?>(null)
-
-    private val _notesFlow = noteRepository.observeAllNotes()
-        .map {
-            // Sanitize newlines
-            it.map { note ->
-                note.copy(content = note.content.replace("\n", ""))
-            }
-        }
-
-    // Combine flows into uiState flow
+    // Combine own state with parent state
     val uiState: StateFlow<NoteListUiState> = combine(
-        _notesFlow,
-        _isSelectionMode,
-        _noteSelectionStates,
-        _activeNote,
-        _userMessage
-    ) { notes, isSelectionMode, noteSelectionStates, activeNote, userMessage ->
+        baseUiStateFlow,
+        _activeNote
+    ) { baseUiState, activeNote ->
         NoteListUiState(
-            notes = notes,
-            stateLoaded = true,
-            isSelectionMode = isSelectionMode,
-            noteSelectionStates = noteSelectionStates,
+            notes = baseUiState.notes,
+            stateLoaded = baseUiState.stateLoaded,
+            isSelectionMode = baseUiState.isSelectionMode,
+            selectedNotes = baseUiState.selectedNotes,
             activeNote = activeNote,
-            userMessage = userMessage
+            userMessage = baseUiState.userMessage
         )
     }.stateIn(
         scope = viewModelScope,
@@ -76,7 +60,6 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
 
     fun updateColor(@ColorRes newColor: Int){
         _activeNote.update { _activeNote.value?.copy(noteColor = newColor) }
-
     }
 
     fun setActiveNote(id: Int?) {
@@ -112,13 +95,13 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
         }
     }
 
-    fun toggleNoteSelected(id: Int) {
+    override fun toggleNoteSelected(id: Int) {
         // Active note can't also be selected
         if (_activeNote.value?.id != id)
-            noteSelectionTracker.toggleNoteSelected(id)
+            super.toggleNoteSelected(id)
     }
 
-    fun deleteSelectedNotes() {
+    override fun deleteSelectedNotes() {
         val selectedNotes = getSelectedAndActiveNoteIds()
         if (selectedNotes.isNotEmpty()) {
             viewModelScope.launch {
@@ -130,29 +113,21 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
         }
     }
 
-    fun deselectAllNotes() {
-        noteSelectionTracker.deselectAllNotes()
-    }
-
-    fun selectAllNotes() {
+    override fun selectAllNotes() {
         val ids: MutableList<Int> = getAllNoteIds().toMutableList()
         _activeNote.value?.let { it -> ids.remove(it.id) } // don't select active note.
-        noteSelectionTracker.selectNotes(ids)
-    }
-
-    private fun getAllNoteIds(): List<Int> {
-        return uiState.value.notes.map { it.id }
+        selectNotes(ids)
     }
 
     private fun getSelectedAndActiveNoteIds(): MutableList<Int> {
-        val selectedNotes = noteSelectionTracker.getAllSelectedNotes().toMutableList()
+        val selectedNotes = uiState.value.selectedNotes.toMutableList()
         _activeNote.value?.let { note ->
             selectedNotes.add(note.id)
         }
         return selectedNotes
     }
 
-    fun changeSelectedNotesColor(@ColorRes color: Int) {
+    override fun changeSelectedNotesColor(@ColorRes color: Int) {
         val selectedNotes = getSelectedAndActiveNoteIds()
         if (selectedNotes.isNotEmpty()) {
             viewModelScope.launch {
@@ -161,22 +136,13 @@ class NoteListViewModel @Inject constructor(private val noteRepository: NoteRepo
             }
         }
     }
-
-    fun updateUserMessage(@StringRes msg: Int) {
-        _userMessage.value = msg
-    }
-
-    fun setUserMessageToNull() {
-        _userMessage.value = null
-    }
-
 }
 
 data class NoteListUiState (
     val notes: List<Note> = listOf(),
     val stateLoaded: Boolean = false,
     val isSelectionMode: Boolean = false,
-    val noteSelectionStates: Map<Int, Boolean> = emptyMap(),
+    val selectedNotes: Set<Int> = emptySet(),
     val activeNote: Note? = null,
     val userMessage: Int? = null
 

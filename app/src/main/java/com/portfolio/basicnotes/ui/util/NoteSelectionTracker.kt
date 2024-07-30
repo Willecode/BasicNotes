@@ -12,28 +12,31 @@ import kotlinx.coroutines.flow.update
  * Optionally observe the [noteSelectionStates]
  * and [isSelectionMode] flows. Used by view models.
  *
- * TODO: This should probably use a set instead of a map
  */
 class NoteSelectionTracker() {
-    private val _noteSelectionStates = MutableStateFlow(mapOf<Int, Boolean>())
-    val noteSelectionStates = _noteSelectionStates.asStateFlow()
+    private val _selectedNotes = MutableStateFlow(setOf<Int>())
+    val noteSelectionStates = _selectedNotes.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode = _isSelectionMode.asStateFlow()
 
 
     fun selectNote(id: Int) {
+        enableSelectionMode()
+        _selectedNotes.value = _selectedNotes.value.toMutableSet().apply {
+            this.add(id)
+        }
+    }
+
+    private fun enableSelectionMode() {
         if (!_isSelectionMode.value) {
             _isSelectionMode.value = true
-        }
-        _noteSelectionStates.value = _noteSelectionStates.value.toMutableMap().apply {
-            this[id] = true
         }
     }
 
     fun deselectNote(id: Int) {
-        _noteSelectionStates.value = _noteSelectionStates.value.toMutableMap().apply {
-            this[id] = false
+        _selectedNotes.value = _selectedNotes.value.toMutableSet().apply {
+            this.remove(id)
         }
         if (countSelections() <= 0) {
             resetSelections()
@@ -48,13 +51,11 @@ class NoteSelectionTracker() {
     }
 
     fun isNoteSelected(id: Int): Boolean {
-        return _noteSelectionStates.value[id]?.equals(true) ?: false
+        return _selectedNotes.value.contains(id)
     }
 
     fun getAllSelectedNotes():List<Int> {
-        return _noteSelectionStates.value.mapNotNull {
-            if (it.value) it.key else null
-        }
+        return _selectedNotes.value.toList()
     }
 
     fun deselectAllNotes() {
@@ -62,24 +63,24 @@ class NoteSelectionTracker() {
     }
 
     private fun countSelections(): Int {
-        var ret: Int = 0
-        _noteSelectionStates.value.forEach {
-            if (it.value)
-                ret++
-        }
-        return ret
+        return _selectedNotes.value.size
     }
 
     private fun resetSelections() {
-        _noteSelectionStates.value = emptyMap()
-        _isSelectionMode.value = false
+        _selectedNotes.value = emptySet()
+        disableSelectionMode()
+    }
+
+    private fun disableSelectionMode() {
+        if (_isSelectionMode.value)
+            _isSelectionMode.value = false
     }
 
     fun selectNotes(ids: List<Int>) {
-        _noteSelectionStates.update { currentMap ->
-            val mutable = currentMap.toMutableMap()
+        _selectedNotes.update { current ->
+            val mutable = current.toMutableSet()
             ids.forEach { id ->
-                mutable[id] = true
+                mutable.add(id)
             }
             mutable
         }

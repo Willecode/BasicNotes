@@ -116,7 +116,7 @@ fun NoteListScreen(
                         } else
                             onNoteClicked,
                         onNoteLongClicked = { viewModel.toggleNoteSelected(it) },
-                        noteSelectionStates = uiState.value.noteSelectionStates
+                        selectedNotes = uiState.value.selectedNotes
                     )
                 }
                 NoteListContentType.LIST_AND_DETAIL -> {
@@ -135,7 +135,7 @@ fun NoteListScreen(
                             { viewModel.setActiveNote(it) }
                         },
                         onNoteLongClicked = { viewModel.toggleNoteSelected(it) },
-                        noteSelectionStates = uiState.value.noteSelectionStates
+                        selectedNotes = uiState.value.selectedNotes
                     )
                 }
             }
@@ -190,7 +190,7 @@ fun NoteList(
     uiState: NoteListUiState,
     onNoteClicked: (Int) -> Unit,
     onNoteLongClicked: (Int) -> Unit,
-    noteSelectionStates: Map<Int, Boolean>,
+    selectedNotes: Set<Int>,
     activeNote: Note? = null
 ) {
     LazyColumn(
@@ -202,21 +202,13 @@ fun NoteList(
                 note = it,
                 onNoteClicked = onNoteClicked,
                 onNoteLongClicked = onNoteLongClicked,
-                isSelected = isNoteSelected(
-                    noteSelectionStates = noteSelectionStates,
-                    note = it
-                ),
+                isSelected = selectedNotes.contains(it.id),
                 isActive = activeNote?.id == it.id
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
         }
     }
 }
-
-private fun isNoteSelected(
-    noteSelectionStates: Map<Int, Boolean>,
-    note: Note
-) = noteSelectionStates[note.id] ?: false
 
 @Composable
 private fun ListDetailLayout(
@@ -229,7 +221,7 @@ private fun ListDetailLayout(
     onNoteClicked: (Int) -> Unit,
     onNoteLongClicked: (Int) -> Unit,
     onNoteSave: () -> Unit,
-    noteSelectionStates: Map<Int, Boolean>
+    selectedNotes: Set<Int>
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -243,7 +235,7 @@ private fun ListDetailLayout(
             uiState = uiState,
             onNoteClicked = onNoteClicked,
             onNoteLongClicked = onNoteLongClicked,
-            noteSelectionStates = noteSelectionStates,
+            selectedNotes = selectedNotes,
             activeNote = activeNote
         )
         Spacer(modifier = Modifier.weight(0.01f))
@@ -419,7 +411,7 @@ private fun NoteListPreview() {
             uiState = buildMockUiState(),
             onNoteClicked = {},
             onNoteLongClicked = {},
-            noteSelectionStates = emptyMap()
+            selectedNotes = emptySet()
         )
     }
 }
@@ -440,7 +432,7 @@ private fun ListDetailLayoutPreview() {
             activeNote = uiState.notes[0],
             onNoteClicked = {},
             onNoteLongClicked = {},
-            noteSelectionStates = emptyMap(),
+            selectedNotes = emptySet(),
             onNoteSave = {}
         )
     }
