@@ -13,6 +13,9 @@ activityCompose = "1.9.0"
 composeBom = "2024.06.00"
 room = "2.6.1"
 material3WindowSizeClassAndroid = "1.2.1"
+androidx-test-runner = "1.6.1"
+androidx-test-rules = "1.6.1"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +40,9 @@ room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room"}
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room"}
 androidx-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class-android", version.ref = "material3WindowSizeClassAndroid" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
