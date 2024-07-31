@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Basic Notes"
 include(":app")
+include(":shared-test")

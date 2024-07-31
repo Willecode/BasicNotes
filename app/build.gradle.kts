@@ -66,6 +66,8 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    testImplementation(project(":shared-test"))
+    androidTestImplementation(project(":shared-test"))
     kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 
@@ -75,6 +77,8 @@ dependencies {
     kapt(libs.room.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
