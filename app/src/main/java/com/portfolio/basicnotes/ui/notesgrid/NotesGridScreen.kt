@@ -60,7 +60,8 @@ fun NotesGridScreen(
     onNoteClicked: (Int) -> Unit,
     actionBarType: BasicNoteActionBarType,
     onDrawerOpen: () -> Unit,
-    @StringRes userMessage: Int?
+    @StringRes userMessage: Int?,
+    onUserMessageDisplayed: () -> Unit
 ) {
     val uiState = notesGridviewModel.uiState.collectAsState().value
 
@@ -82,7 +83,10 @@ fun NotesGridScreen(
             onSelectAllPressed = { notesGridviewModel.selectAllNotes() },
             onDeselectAllPressed = { notesGridviewModel.deselectAllNotes() },
             actionIconsVisible = isSelectionMode,
-            onUserMessageDisplayed = { notesGridviewModel.setUserMessageToNull() },
+            onUserMessageDisplayed = {
+                notesGridviewModel.clearUserMessage()
+                onUserMessageDisplayed()
+            },
             userMessage = uiState.userMessage,
             selectedNotes = uiState.selectedNotes,
             notes = uiState.notes,
@@ -116,7 +120,7 @@ fun NotesGridScaffold(
     actionIconsVisible: Boolean,
     notes: List<Note>,
     selectedNotes: Set<Int>,
-    @StringRes userMessage: Int?,
+    @StringRes userMessage: Int,
     onUserMessageDisplayed: () -> Unit
 ) {
     var showPaletteDialog by remember { mutableStateOf(false) }
@@ -153,11 +157,13 @@ fun NotesGridScaffold(
         )
 
         // Display user message if there is one
-        userMessage?.let {
-            val snackbarText = stringResource(it)
-            LaunchedEffect(it) {
-                snackbarHostState.showSnackbar(snackbarText)
-                onUserMessageDisplayed()
+        userMessage.let {
+            if (it != 0) {
+                val snackbarText = stringResource(it)
+                LaunchedEffect(it) {
+                    snackbarHostState.showSnackbar(snackbarText)
+                    onUserMessageDisplayed()
+                }
             }
         }
     }

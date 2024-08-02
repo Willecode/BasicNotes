@@ -46,7 +46,7 @@ abstract class NoteViewModel(
             stateLoaded = true,
             isSelectionMode = isSelectionMode,
             selectedNotes = selectedNotes,
-            userMessage = userMessage
+            userMessage = userMessage ?: 0
         )
     }.stateIn(
         scope = viewModelScope,
@@ -62,7 +62,7 @@ abstract class NoteViewModel(
         _userMessage.value = msg
     }
 
-    fun setUserMessageToNull() {
+    fun clearUserMessage() {
         _userMessage.value = null
     }
 
@@ -108,6 +108,6 @@ abstract class NoteViewModel(
         val stateLoaded: Boolean = false,
         val isSelectionMode: Boolean = false,
         val selectedNotes: Set<Int> = emptySet(),
-        val userMessage: Int? = null
+        val userMessage: Int = 0
     )
 }

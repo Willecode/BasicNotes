@@ -144,6 +144,6 @@ data class NoteListUiState (
     val isSelectionMode: Boolean = false,
     val selectedNotes: Set<Int> = emptySet(),
     val activeNote: Note? = null,
-    val userMessage: Int? = null
+    val userMessage: Int = 0
 
 )

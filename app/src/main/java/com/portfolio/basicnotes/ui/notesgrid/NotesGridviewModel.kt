@@ -37,5 +37,5 @@ data class GridScreenUiState(
     val stateLoaded: Boolean = false,
     val isSelectionMode: Boolean = false,
     val selectedNotes: Set<Int> = emptySet(),
-    val userMessage: Int? = null
+    val userMessage: Int = 0
 )

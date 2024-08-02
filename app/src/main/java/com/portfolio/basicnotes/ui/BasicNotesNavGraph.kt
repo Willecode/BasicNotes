@@ -60,7 +60,8 @@ fun BasicNotesNavGraph(
                     onNoteClicked = { navigation.navigateToNoteEditScreen(it) },
                     actionBarType = actionBarType,
                     onDrawerOpen = { coroutineScope.launch { drawerState.open() } },
-                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG)
+                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG),
+                    onUserMessageDisplayed = { entry.savedStateHandle[USER_MESSAGE_ARG] = 0 },
                 )
             }
         }
@@ -91,7 +92,8 @@ fun BasicNotesNavGraph(
                     contentType = contentType,
                     actionBarType = actionBarType,
                     onDrawerOpen = { coroutineScope.launch { drawerState.open() } },
-                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG)
+                    userMessage = entry.savedStateHandle.get<Int>(USER_MESSAGE_ARG),
+                    onUserMessageDisplayed = { entry.savedStateHandle[USER_MESSAGE_ARG] = 0 }
                 )
             }
         }

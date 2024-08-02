@@ -69,7 +69,8 @@ fun NoteListScreen(
     contentType: NoteListContentType,
     actionBarType: BasicNoteActionBarType,
     onDrawerOpen: () -> Unit,
-    @StringRes userMessage: Int?
+    @StringRes userMessage: Int?,
+    onUserMessageDisplayed: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var showPaletteDialog by remember { mutableStateOf(false) }
@@ -141,11 +142,14 @@ fun NoteListScreen(
             }
 
             // Display user message if there is one
-            uiState.value.userMessage?.let {
-                val snackbarText = stringResource(it)
-                LaunchedEffect(it) {
-                    snackbarHostState.showSnackbar(snackbarText)
-                    viewModel.setUserMessageToNull()
+            uiState.value.userMessage.let {
+                if (it != 0) {
+                    val snackbarText = stringResource(it)
+                    LaunchedEffect(it) {
+                        snackbarHostState.showSnackbar(snackbarText)
+                        onUserMessageDisplayed()
+                        viewModel.clearUserMessage()
+                    }
                 }
             }
 
