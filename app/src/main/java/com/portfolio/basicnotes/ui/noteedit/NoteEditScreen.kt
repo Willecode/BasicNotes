@@ -123,7 +123,7 @@ fun NoteEditScreen(
     if (showDeleteConfirmDialog) {
         DeleteConfirmDialog(
             text = "Are you sure you want to delete the note?",
-            confirmButtonText = "Yes",
+            confirmButtonText = stringResource(id = R.string.dialog_yes),
             onCancel = { showDeleteConfirmDialog = false },
             onConfirm = { viewModel.deleteNoteAndGoBack(onBackPressed, setResult) }
         )

@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.portfolio.basicnotes.CustomTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -78,6 +78,10 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.coroutines.test)
+
+    // Testing with Hilt
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

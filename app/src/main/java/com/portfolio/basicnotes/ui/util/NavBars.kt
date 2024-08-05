@@ -70,7 +70,7 @@ private fun AddNoteFab(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
     ) {
-        Icon(painterResource(fabItem.icon), "Add")
+        Icon(painterResource(fabItem.icon), stringResource(id = R.string.content_description_add))
     }
 }
 

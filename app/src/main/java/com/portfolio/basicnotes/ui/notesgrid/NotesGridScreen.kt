@@ -179,7 +179,7 @@ fun NotesGridScaffold(
     if (showDeleteConfirmDialog) {
         DeleteConfirmDialog(
             text = "Selected notes are going to be permanently deleted. Are you sure?",
-            confirmButtonText = "Yes",
+            confirmButtonText = stringResource(id = R.string.dialog_yes),
             onCancel = { showDeleteConfirmDialog = false },
             onConfirm = {
                 onDelete()

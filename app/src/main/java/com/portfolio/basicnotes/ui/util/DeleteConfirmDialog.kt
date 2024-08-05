@@ -7,6 +7,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.portfolio.basicnotes.R
 import com.portfolio.basicnotes.ui.theme.BasicTodoTheme
@@ -46,7 +47,7 @@ fun DeleteConfirmDialog(
                     onCancel()
                 }
             ) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.dialog_cancel))
             }
         }
     )
@@ -59,7 +60,7 @@ private fun DeleteConfirmDialogPreview() {
         DeleteConfirmDialog(
             text = "Are you sure you want to delete selected notes?",
             onConfirm = {},
-            confirmButtonText = "Confirm",
+            confirmButtonText = stringResource(id = R.string.dialog_confirm),
             onCancel = {}
         )
     }

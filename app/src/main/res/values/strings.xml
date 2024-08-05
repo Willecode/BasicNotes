@@ -6,10 +6,19 @@
 
     <string name="content_description_save">Save</string>
     <string name="content_description_add">Add</string>
+    <string name="content_description_back">Go back</string>
+    <string name="content_description_delete_selected">Delete selected notes</string>
+    <string name="content_description_change_selected_color">Change selected notes\' color</string>
+    <string name="content_description_select_all">Select all</string>
+    <string name="content_description_deselect_all">Deselect all</string>
 
     <string name="about_app_content">This is a portfolio project by Wille</string>
     <string name="about_app_title">About Basic Notes</string>
     <string name="about_app_ok">Ok</string>
+
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_yes">Yes</string>
 
     <string name="notes_grid_bottom_bar_label">Grid</string>
     <string name="drawer_label">Drawer</string>

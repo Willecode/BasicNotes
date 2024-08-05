@@ -139,7 +139,7 @@ private fun IconButtonDelete(onDeletePressed: () -> Unit) {
     ) {
         Icon(
             painter = painterResource(id = R.drawable.outline_delete_24),
-            "Delete"
+            stringResource(id = R.string.content_description_delete_selected)
         )
     }
 }
@@ -151,7 +151,7 @@ private fun IconButtonPalette(onPalettePressed: () -> Unit) {
     ) {
         Icon(
             painter = painterResource(id = R.drawable.outline_palette_24),
-            "Change color"
+            stringResource(id = R.string.content_description_change_selected_color)
         )
     }
 }
@@ -163,7 +163,7 @@ private fun IconButtonSelectAll(onSelectAllPressed: () -> Unit) {
     ) {
         Icon(
             painter = painterResource(id = R.drawable.outline_select_all_24),
-            "Select all"
+            stringResource(id = R.string.content_description_select_all)
         )
     }
 }
@@ -175,7 +175,7 @@ private fun IconButtonDeselectAll(onDeselectAllPressed: () -> Unit) {
     ) {
         Icon(
             painter = painterResource(id = R.drawable.outline_deselect_24),
-            "Deselect all"
+            stringResource(id = R.string.content_description_deselect_all)
         )
     }
 }
@@ -236,7 +236,7 @@ private fun IconButtonBack(onBackPressed: () -> Unit) {
     IconButton(
         onClick = onBackPressed
     ) {
-        Icon(Icons.Filled.ArrowBack, "Go back")
+        Icon(Icons.Filled.ArrowBack, stringResource(id = R.string.content_description_back))
     }
 }
 
